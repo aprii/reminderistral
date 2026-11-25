@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="stats">
+  <div class="card stat">
+    <div class="stat-label">Points</div>
+    <div class="stat-value">{{ current_user['points'] }}</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-label">Level {{ level }}</div>
+    <div class="progress"><div class="progress-fill" style="width: {{ progress }}%"></div></div>
+    <div class="stat-sub">{{ current_user['points'] - lo }} / {{ hi - lo }} pts to level {{ level + 1 }}</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-label">Streak</div>
+    <div class="stat-value">🔥 {{ current_user['streak'] }}</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-label">Quests done</div>
+    <div class="stat-value">{{ current_user['tasks_done'] }}</div>
+    <div class="stat-sub">{{ on_time_rate }}% on time</div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>New quest</h2>
+  <form method="post" action="{{ url_for('add_task') }}" class="task-form">
+    <input type="hidden" name="csrf" value="{{ csrf }}">
+    <input type="text" name="title" maxlength="120" placeholder="Quest title" required>
+    <input type="datetime-local" name="due" required>
+    <select name="difficulty">
+      {% for key, label in difficulties.items() %}
+      <option value="{{ key }}" {% if key == 'normal' %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <textarea name="description" placeholder="Description (optional)" rows="2"></textarea>
+    <button class="btn btn-primary" type="submit">Add quest</button>
+  </form>
+  <p class="hint">
+    Finish before the deadline: full base points + {{ (on_time_bonus * 100)|int }}% bonus.
+    Finish late: ×{{ late_penalty }}. Each postpone (+1 day): −{{ decay_pct }}% of base points.
+    Daily streak adds up to +{{ streak_cap }} pts per completion.
+  </p>
+</section>
+
+<section>
+  <h2>Open quests</h2>
+  {% if tasks %}
+  <div class="task-list">
+    {% for t in tasks %}
+    <div class="card task {% if t.overdue %}overdue{% endif %}">
+      <div class="task-main">
+        <div class="task-title">{{ t.title }}</div>
+        {% if t.description %}<div class="task-desc">{{ t.description }}</div>{% endif %}
+        <div class="task-meta">
+          <span class="tag tag-{{ t.difficulty }}">{{ t.difficulty }}</span>
+          <span>Due {{ t.due_at|localdt }}{% if t.overdue %} · <strong>overdue</strong>{% endif %}</span>
+          {% if t.postpones %}<span class="tag tag-postpone">postponed ×{{ t.postpones }}</span>{% endif %}
+          <span class="tag tag-points">worth {{ t.worth_now }} pts if done now</span>
+        </div>
+      </div>
+      <div class="task-actions">
+        <form method="post" action="{{ url_for('complete_task', task_id=t.id) }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="btn btn-primary" type="submit">Done</button>
+        </form>
+        <form method="post" action="{{ url_for('postpone_task', task_id=t.id) }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="btn btn-warn" type="submit">+1 day</button>
+        </form>
+        <form method="post" action="{{ url_for('delete_task', task_id=t.id) }}">
+          <input type="hidden" name="csrf" value="{{ csrf }}">
+          <button class="btn btn-ghost" type="submit" title="Delete">✕</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="empty">No open quests. Add one above — your future self will thank you.</p>
+  {% endif %}
+</section>
+
+{% if badges %}
+<section>
+  <h2>Badges</h2>
+  <div class="badge-list">
+    {% for b in badges %}
+    <div class="badge" title="{{ badges_def[b.badge][1] if b.badge in badges_def else '' }}">
+      🏅 {{ badges_def[b.badge][0] if b.badge in badges_def else b.badge }}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if done_tasks %}
+<section>
+  <h2>Recently completed</h2>
+  <div class="task-list">
+    {% for t in done_tasks %}
+    <div class="card task done-task">
+      <div class="task-main">
+        <div class="task-title">{{ t.title }}</div>
+        <div class="task-meta">
+          <span>Finished {{ t.completed_at|localdt }}</span>
+          {% if t.postpones %}<span class="tag tag-postpone">postponed ×{{ t.postpones }}</span>{% endif %}
+          <span class="tag tag-points">+{{ t.points_awarded }} pts</span>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% endblock %}

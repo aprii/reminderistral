@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Sign up · QuestLog{% endblock %}
+{% block content %}
+<div class="card auth-card">
+  <h1>Create your account</h1>
+  <form method="post" action="{{ url_for('register') }}">
+    <label>Username <input type="text" name="username" required minlength="3" maxlength="20" autocomplete="username"></label>
+    <label>Password <input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+    <label>Repeat password <input type="password" name="confirm" required minlength="8" autocomplete="new-password"></label>
+    <button class="btn btn-primary btn-block" type="submit">Start questing</button>
+  </form>
+  <p class="hint">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+</div>
+{% endblock %}
