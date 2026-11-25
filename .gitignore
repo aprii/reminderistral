@@ -4,3 +4,4 @@ __pycache__/
 .venv/
 *.log
 server.pid
+cloudflare/app.db

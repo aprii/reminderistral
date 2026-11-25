@@ -1,0 +1,18 @@
+[project]
+name = "questlog-worker"
+version = "0.1.0"
+description = "QuestLog gamified to-do app — Cloudflare Workers (Python) + D1 port"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi",
+    "jinja2",
+    "python-multipart",
+]
+
+[dependency-groups]
+dev = [
+    "workers-py",
+    "workers-runtime-sdk",
+    "uvicorn",
+    "httpx",
+]

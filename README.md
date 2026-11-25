@@ -95,6 +95,17 @@ To put it online yourself, any of these works:
 
 Either way: never commit `app.db` or your `SECRET_KEY`; both are runtime artifacts.
 
+## Cloudflare Workers + D1 (serverless, no VPS)
+
+The `cloudflare/` directory contains a port of the app to **Cloudflare Workers (Python)**
+with a **D1** database, so you can run it serverless on Cloudflare's network instead of a
+VPS. Same features and same gamification rules; the DB layer uses the D1 binding on
+Workers and a local SQLite file when run locally. Deploy steps (create D1, apply
+`migrations/`, `pywrangler dev` / `pywrangler deploy`, custom domain) are in
+[cloudflare/README.md](cloudflare/README.md). To use your own domain with Cloudflare's
+free HTTPS/CDN/WAF in front, add the domain to Cloudflare and point its DNS at the
+deployed Worker (or at your VPS/PaaS if you use the Flask version).
+
 ## Security notes
 
 - Password hashes and session tokens are never logged or displayed.
